@@ -1,9 +1,25 @@
+# linux-hardening-pack secure SSH baseline
+
 Port 22
+Protocol 2
+
 PermitRootLogin no
 PasswordAuthentication no
 ChallengeResponseAuthentication no
 UsePAM yes
-AllowTcpForwarding no
-X11Forwarding no
+
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+
+MaxAuthTries 4
+LoginGraceTime 30
 ClientAliveInterval 300
 ClientAliveCountMax 2
+
+AllowTcpForwarding no
+X11Forwarding no
+PermitEmptyPasswords no
+
+LogLevel VERBOSE
+
+Subsystem sftp /usr/lib/openssh/sftp-server
