@@ -1,0 +1,29 @@
+name: Linux Hardening CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  validate-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Lint Bash Scripts
+        run: |
+          shellcheck scripts/harden.sh
+          shellcheck scripts/verify.sh
+          shellcheck scripts/rollback.sh
+
+      - name: Validate Bash Syntax
+        run: |
+          bash -n scripts/harden.sh
+          bash -n scripts/verify.sh
+          bash -n scripts/rollback.sh
