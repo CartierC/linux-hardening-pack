@@ -1,25 +1,82 @@
-# linux-hardening-pack secure SSH baseline
+# linux-hardening-pack — hardened SSH baseline configuration
+# Target: Ubuntu/Debian-based Linux (OpenSSH 8.x+)
+# Deployed to: /etc/ssh/sshd_config by scripts/harden.sh
 
+# ===========================================================================
+# Protocol and Port
+# ===========================================================================
 Port 22
 Protocol 2
+AddressFamily any
 
+# ===========================================================================
+# Authentication — disable all password-based methods
+# ===========================================================================
 PermitRootLogin no
 PasswordAuthentication no
 ChallengeResponseAuthentication no
-UsePAM yes
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
 
+# ===========================================================================
+# Public Key Authentication
+# ===========================================================================
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
 
+# ===========================================================================
+# Brute Force Mitigation
+# ===========================================================================
 MaxAuthTries 4
+MaxSessions 4
 LoginGraceTime 30
+
+# ===========================================================================
+# Idle Session Timeouts
+# ===========================================================================
 ClientAliveInterval 300
 ClientAliveCountMax 2
 
+# ===========================================================================
+# Forwarding — disable all forwarding to reduce attack surface
+# ===========================================================================
 AllowTcpForwarding no
 X11Forwarding no
-PermitEmptyPasswords no
+AllowAgentForwarding no
+PermitTunnel no
+GatewayPorts no
 
+# ===========================================================================
+# Legacy / Dangerous Features — explicitly disabled
+# ===========================================================================
+IgnoreRhosts yes
+HostbasedAuthentication no
+PermitUserEnvironment no
+PermitUserRC no
+AcceptEnv LANG LC_*
+
+# ===========================================================================
+# PAM — keep enabled for account/session management (pam_unix, pam_limits)
+# ===========================================================================
+UsePAM yes
+
+# ===========================================================================
+# Logging
+# ===========================================================================
+SyslogFacility AUTH
 LogLevel VERBOSE
+PrintLastLog yes
+Banner /etc/issue.net
 
+# ===========================================================================
+# Miscellaneous
+# ===========================================================================
+StrictModes yes
+Compression no
+TCPKeepAlive yes
+UseDNS no
+
+# ===========================================================================
+# SFTP Subsystem
+# ===========================================================================
 Subsystem sftp /usr/lib/openssh/sftp-server

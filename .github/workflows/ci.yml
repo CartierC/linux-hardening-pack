@@ -4,26 +4,142 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  validate-scripts:
+  # ---------------------------------------------------------------------------
+  # Job 1: Lint and syntax-check all shell scripts
+  # ---------------------------------------------------------------------------
+  lint-scripts:
+    name: Lint Shell Scripts
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install ShellCheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
+        run: sudo apt-get update -qq && sudo apt-get install -y shellcheck
 
-      - name: Lint Bash Scripts
-        run: |
-          shellcheck scripts/harden.sh
-          shellcheck scripts/verify.sh
-          shellcheck scripts/rollback.sh
+      - name: ShellCheck — harden.sh
+        run: shellcheck -S warning scripts/harden.sh
 
-      - name: Validate Bash Syntax
+      - name: ShellCheck — verify.sh
+        run: shellcheck -S warning scripts/verify.sh
+
+      - name: ShellCheck — rollback.sh
+        run: shellcheck -S warning scripts/rollback.sh
+
+      - name: Bash syntax check — all scripts
         run: |
           bash -n scripts/harden.sh
           bash -n scripts/verify.sh
           bash -n scripts/rollback.sh
+
+      - name: Verify scripts have --help flag
+        run: |
+          chmod +x scripts/harden.sh scripts/verify.sh scripts/rollback.sh
+          bash scripts/harden.sh --help
+          bash scripts/verify.sh --help
+          bash scripts/rollback.sh --help
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Validate configuration files
+  # ---------------------------------------------------------------------------
+  validate-configs:
+    name: Validate Config Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install openssh-server
+        run: sudo apt-get update -qq && sudo apt-get install -y openssh-server
+
+      - name: Validate sshd_config syntax (sshd -t)
+        run: sudo sshd -t -f configs/sshd_config.secure
+
+      - name: Validate sysctl.conf.secure format
+        run: |
+          echo "Checking sysctl config for valid key=value entries..."
+          while IFS= read -r line || [[ -n "$line" ]]; do
+            # skip blank lines and comments
+            trimmed="${line#"${line%%[! ]*}"}"
+            [[ -z "$trimmed" || "$trimmed" == \#* ]] && continue
+            if ! echo "$trimmed" | grep -qE '^[a-z_./]+[[:space:]]*=[[:space:]]*[0-9]+$'; then
+              echo "INVALID line: $line"
+              exit 1
+            fi
+            echo "  OK: $trimmed"
+          done < configs/sysctl.conf.secure
+          echo "sysctl.conf.secure: all entries valid."
+
+      - name: Validate fail2ban.local has required sections
+        run: |
+          python3 - <<'PYEOF'
+          import configparser, sys
+
+          cfg = configparser.ConfigParser()
+          cfg.read("configs/fail2ban.local")
+
+          required_sections = ["DEFAULT", "sshd"]
+          for section in required_sections:
+              if section not in cfg and section != "DEFAULT":
+                  print(f"ERROR: missing [{section}] section")
+                  sys.exit(1)
+
+          required_sshd_keys = ["enabled", "port", "filter", "maxretry", "bantime"]
+          for key in required_sshd_keys:
+              if key not in cfg["sshd"]:
+                  print(f"ERROR: [sshd] section missing key: {key}")
+                  sys.exit(1)
+
+          print("fail2ban.local: structure is valid.")
+          print(f"  Sections: {cfg.sections()}")
+          PYEOF
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Integration test — harden then verify on ephemeral VM
+  # ---------------------------------------------------------------------------
+  integration-test:
+    name: Integration Test (Harden + Verify)
+    runs-on: ubuntu-latest
+    needs: [ lint-scripts, validate-configs ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Mark scripts executable
+        run: chmod +x scripts/harden.sh scripts/verify.sh scripts/rollback.sh
+
+      - name: Run harden.sh (full apply on ephemeral runner)
+        run: sudo bash scripts/harden.sh
+        # GitHub Actions runners are ephemeral VMs — safe to apply hardening
+
+      - name: Display hardening log
+        run: |
+          LOG=$(ls -t logs/harden-*.log | head -1)
+          echo "=== Hardening Log: $LOG ==="
+          cat "$LOG"
+
+      - name: Run verify.sh — assert all controls pass
+        run: sudo bash scripts/verify.sh
+
+      - name: Run rollback.sh — verify rollback completes cleanly
+        run: sudo bash scripts/rollback.sh
+
+      - name: Display rollback log
+        run: |
+          LOG=$(ls -t logs/rollback-*.log | head -1)
+          echo "=== Rollback Log: $LOG ==="
+          cat "$LOG"
+
+      - name: Upload hardening logs as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardening-logs
+          path: logs/
+          retention-days: 7

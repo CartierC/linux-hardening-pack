@@ -1,12 +1,38 @@
-# linux-hardening-pack fail2ban baseline
+# linux-hardening-pack — fail2ban baseline configuration
+# Target: Ubuntu/Debian-based Linux
+# Deployed to: /etc/fail2ban/jail.local by scripts/harden.sh
 
 [DEFAULT]
-bantime = 1h
+# Global ban/detection window defaults
+bantime  = 24h
 findtime = 10m
 maxretry = 5
+
+# Use systemd journal for log parsing (Ubuntu 22.04+)
 backend = systemd
 
+# Email notifications (disabled by default — set action_mw to enable)
+destemail = root@localhost
+sender    = fail2ban@localhost
+mta       = sendmail
+
+# Default ban action: ban only (no email)
+action = %(action_)s
+
+# Log all bans to file
+logtarget = /var/log/fail2ban.log
+
+# ===========================================================================
+# SSH Jail
+# ===========================================================================
 [sshd]
-enabled = true
-port = ssh
-logpath = %(sshd_log)s
+enabled  = true
+port     = ssh
+filter   = sshd
+backend  = systemd
+logpath  = %(sshd_log)s
+
+# Tighter limits for the SSH jail vs DEFAULT
+maxretry = 3
+bantime  = 24h
+findtime = 10m

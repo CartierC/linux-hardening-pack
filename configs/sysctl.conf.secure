@@ -1,25 +1,89 @@
-# linux-hardening-pack secure sysctl baseline
+# linux-hardening-pack — sysctl kernel hardening baseline
+# Target: Ubuntu/Debian-based Linux (Ubuntu 22.04 LTS)
+# Applied by: scripts/harden.sh -> /etc/sysctl.d/99-hardening.conf
 
-# Disable IP forwarding
+# ===========================================================================
+# IP Forwarding — disable routing between interfaces
+# ===========================================================================
 net.ipv4.ip_forward = 0
+net.ipv6.conf.all.forwarding = 0
 
-# Disable ICMP redirects
+# ===========================================================================
+# ICMP Redirects — prevent MITM route manipulation
+# ===========================================================================
 net.ipv4.conf.all.accept_redirects = 0
 net.ipv4.conf.default.accept_redirects = 0
 net.ipv4.conf.all.send_redirects = 0
 net.ipv4.conf.default.send_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
 
-# Disable source routing
+# ===========================================================================
+# Source Routing — block malicious routing headers
+# ===========================================================================
 net.ipv4.conf.all.accept_source_route = 0
 net.ipv4.conf.default.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv6.conf.default.accept_source_route = 0
 
-# Enable reverse path filtering
+# ===========================================================================
+# Reverse Path Filtering — drop spoofed source-address packets
+# ===========================================================================
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
 
-# Kernel ASLR
+# ===========================================================================
+# SYN Cookies — mitigate SYN flood DoS attacks
+# ===========================================================================
+net.ipv4.tcp_syncookies = 1
+
+# ===========================================================================
+# Martian Logging — log packets with impossible source addresses
+# ===========================================================================
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
+
+# ===========================================================================
+# ICMP Broadcast / Bogus Error Suppression
+# ===========================================================================
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+# ===========================================================================
+# IPv6 Router Advertisements — disable (host-only system)
+# ===========================================================================
+net.ipv6.conf.all.accept_ra = 0
+net.ipv6.conf.default.accept_ra = 0
+
+# ===========================================================================
+# Kernel ASLR — randomize memory address layout (max strength)
+# ===========================================================================
 kernel.randomize_va_space = 2
 
-# Protect symlinks/hardlinks
+# ===========================================================================
+# Core Dumps — disable setuid core dumps (prevent credential leaks)
+# ===========================================================================
+fs.suid_dumpable = 0
+
+# ===========================================================================
+# Filesystem Hardlinks / Symlinks — prevent TOCTOU attacks
+# ===========================================================================
 fs.protected_hardlinks = 1
 fs.protected_symlinks = 1
+
+# ===========================================================================
+# Kernel Pointer Exposure — hide kernel addresses from /proc
+# ===========================================================================
+kernel.kptr_restrict = 2
+
+# ===========================================================================
+# dmesg Restriction — restrict kernel ring buffer access
+# ===========================================================================
+kernel.dmesg_restrict = 1
+
+# ===========================================================================
+# ptrace Scope — restrict process tracing to parent processes only
+# ===========================================================================
+kernel.yama.ptrace_scope = 1
