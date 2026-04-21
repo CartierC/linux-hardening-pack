@@ -1,6 +1,6 @@
 # Linux Hardening Pack
 
-Standardized Linux hardening scripts and security configurations designed to demonstrate practical Linux administration, security baseline enforcement, verification workflows, and rollback awareness.
+Practical Linux security hardening project demonstrating baseline enforcement, repeatable automation, verification, and rollback awareness for real-world system administration.
 
 ---
 
