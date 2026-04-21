@@ -1,12 +1,17 @@
 # Linux Hardening Pack
 
-Practical Linux security hardening project demonstrating baseline enforcement, repeatable automation, verification, and rollback awareness for real-world system administration.
+Standardized Linux hardening scripts and baseline security configurations designed to demonstrate practical system administration, security enforcement, verification workflows, and rollback awareness.
 
+## What This Project Covers
+- SSH hardening
+- sysctl security tuning
+- Fail2Ban baseline configuration
+- Validation and verification workflows
+- Safer change management through rollback-aware scripting
+
+## Why This Matters
+This project reflects the kind of repeatable operational discipline used in real infrastructure environments where security, stability, and auditability matter.
 ---
-
-## Purpose
-
-This project demonstrates a real-world approach to Linux system hardening using repeatable scripts, structured configurations, and verification processes.  
 
 It is designed as a **portfolio-ready proof of skill** for roles in:
 - IT Support
