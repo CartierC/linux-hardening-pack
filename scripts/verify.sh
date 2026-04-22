@@ -41,6 +41,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)   usage ;;
         *)           echo "Unknown option: $1. Use -h for help." >&2; exit 1 ;;
     esac
+    # shellcheck disable=SC2317
     shift
 done
 
@@ -251,7 +252,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$(dirname "$SCRIPT_DIR")/logs"
 
 if ls "${LOG_DIR}"/harden-*.log > /dev/null 2>&1; then
-    LATEST_LOG=$(ls -t "${LOG_DIR}"/harden-*.log | head -1)
+    LATEST_LOG=$(find "${LOG_DIR}" -name "harden-*.log" -type f | sort -t_ | tail -1)
     pass "Hardening log found: $LATEST_LOG"
     LOG_AGE_DAYS=$(( ( $(date +%s) - $(stat -c %Y "$LATEST_LOG") ) / 86400 ))
     if [[ $LOG_AGE_DAYS -gt 30 ]]; then

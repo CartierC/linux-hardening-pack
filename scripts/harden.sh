@@ -93,7 +93,8 @@ log "--- [1/7] Backing up original configurations ---"
 
 backup_file() {
     local src="$1"
-    local dest="$BACKUP_DIR/$(basename "$src").bak"
+    local dest
+    dest="$BACKUP_DIR/$(basename "$src").bak"
     if [[ -f "$src" ]]; then
         if [[ ! -f "$dest" ]]; then
             run cp -p "$src" "$dest"

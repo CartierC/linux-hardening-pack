@@ -59,6 +59,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)   usage ;;
         *)           die "Unknown option: $1. Use -h for help." ;;
     esac
+    # shellcheck disable=SC2317
     shift
 done
 
