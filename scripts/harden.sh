@@ -133,17 +133,16 @@ run cp "$CONFIG_DIR/sshd_config.secure" /etc/ssh/sshd_config
 run chmod 600 /etc/ssh/sshd_config
 run chown root:root /etc/ssh/sshd_config
 
-if [[ "$DRY_RUN" == "false" ]]; then
-    if ls /etc/ssh/ssh_host_*_key > /dev/null 2>&1; then
+if [ -d /run/sshd ] || systemctl is-active --quiet ssh 2>/dev/null; then
+    if [[ "$DRY_RUN" == "false" ]]; then
         sshd -t || die "sshd config validation failed — SSH service NOT restarted."
         log "  sshd config syntax: OK"
-    else
-        log "  WARN: No SSH host keys found — skipping sshd -t validation."
     fi
+    run systemctl restart ssh
+    log "  SSH hardened and restarted."
+else
+    log "  WARNING: SSH privilege separation dir missing — skipping sshd restart (CI environment detected)"
 fi
-
-run systemctl restart ssh
-log "  SSH hardened and restarted."
 
 # ---------------------------------------------------------------------------
 # SECTION 4: Sysctl kernel hardening
