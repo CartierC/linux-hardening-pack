@@ -134,8 +134,12 @@ run chmod 600 /etc/ssh/sshd_config
 run chown root:root /etc/ssh/sshd_config
 
 if [[ "$DRY_RUN" == "false" ]]; then
-    sshd -t || die "sshd config validation failed — SSH service NOT restarted."
-    log "  sshd config syntax: OK"
+    if ls /etc/ssh/ssh_host_*_key > /dev/null 2>&1; then
+        sshd -t || die "sshd config validation failed — SSH service NOT restarted."
+        log "  sshd config syntax: OK"
+    else
+        log "  WARN: No SSH host keys found — skipping sshd -t validation."
+    fi
 fi
 
 run systemctl restart ssh
