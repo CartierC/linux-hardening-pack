@@ -67,7 +67,7 @@ jobs:
             # skip blank lines and comments
             trimmed="${line#"${line%%[! ]*}"}"
             [[ -z "$trimmed" || "$trimmed" == \#* ]] && continue
-            if ! echo "$trimmed" | grep -qE '^[a-z_./]+[[:space:]]*=[[:space:]]*[0-9]+$'; then
+            if ! echo "$trimmed" | grep -qE '^[a-z0-9_./]+[[:space:]]*=[[:space:]]*[0-9]+$'; then
               echo "INVALID line: $line"
               exit 1
             fi
