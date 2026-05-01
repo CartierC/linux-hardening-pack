@@ -18,6 +18,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Verify required files exist
+        run: |
+          required=(
+            "scripts/harden.sh"
+            "scripts/verify.sh"
+            "scripts/rollback.sh"
+            "configs/sshd_config.secure"
+            "configs/sysctl.conf.secure"
+            "configs/fail2ban.local"
+            "docs/hardening-standard.md"
+            "docs/threat-model.md"
+            "docs/verification-checklist.md"
+            "docs/verification-output.md"
+            "logs/.gitkeep"
+          )
+          missing=0
+          for f in "${required[@]}"; do
+            if [[ -f "$f" ]]; then
+              echo "  OK: $f"
+            else
+              echo "  MISSING: $f"
+              missing=1
+            fi
+          done
+          [[ "$missing" -eq 0 ]] || { echo "One or more required files are missing."; exit 1; }
+          echo "All required files present."
+
       - name: Install ShellCheck
         run: sudo apt-get update -qq && sudo apt-get install -y shellcheck
 

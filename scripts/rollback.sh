@@ -89,8 +89,12 @@ if [[ -f "$SSH_BAK" ]]; then
     chown root:root /etc/ssh/sshd_config
     log "  Restored /etc/ssh/sshd_config from $SSH_BAK"
     if sshd -t; then
-        systemctl restart ssh
-        log "  SSH service restarted successfully."
+        if [ -d /run/sshd ] || systemctl is-active --quiet ssh 2>/dev/null; then
+            systemctl restart ssh
+            log "  SSH service restarted successfully."
+        else
+            log "  SSH config validated — skipping restart (CI environment detected)"
+        fi
     else
         warn "Restored sshd_config failed syntax check — SSH NOT restarted."
         warn "Inspect $SSH_BAK manually before restarting SSH."

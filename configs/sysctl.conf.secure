@@ -1,6 +1,7 @@
 # linux-hardening-pack — sysctl kernel hardening baseline
 # Target: Ubuntu/Debian-based Linux (Ubuntu 22.04 LTS)
 # Applied by: scripts/harden.sh -> /etc/sysctl.d/99-hardening.conf
+# Portfolio example: 20+ kernel parameters covering ASLR, spoofing, SYN flood, and redirect attacks
 
 # ===========================================================================
 # IP Forwarding — disable routing between interfaces

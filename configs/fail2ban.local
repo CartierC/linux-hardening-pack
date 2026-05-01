@@ -1,6 +1,7 @@
 # linux-hardening-pack — fail2ban baseline configuration
 # Target: Ubuntu/Debian-based Linux
 # Deployed to: /etc/fail2ban/jail.local by scripts/harden.sh
+# Portfolio example: SSH jail with 3-strike rule, 24h ban, systemd backend for Ubuntu 22.04
 
 [DEFAULT]
 # Global ban/detection window defaults

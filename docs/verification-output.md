@@ -73,7 +73,7 @@ User     : root
   [PASS] Permissions /root = 700
 
 === Hardening Log ===
-  [PASS] Hardening log found: /opt/linux-hardening-pack/logs/harden-2026-04-21_14-30-01.log
+  [PASS] Hardening log found: /home/ubuntu/linux-hardening-pack/logs/harden-2026-04-21_14-30-01.log
 
 ======================================
   VERIFICATION SUMMARY

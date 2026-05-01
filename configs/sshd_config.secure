@@ -1,6 +1,7 @@
 # linux-hardening-pack — hardened SSH baseline configuration
 # Target: Ubuntu/Debian-based Linux (OpenSSH 8.x+)
 # Deployed to: /etc/ssh/sshd_config by scripts/harden.sh
+# Portfolio example: production-grade SSH hardening — key-only auth, no root, brute-force throttle
 
 # ===========================================================================
 # Protocol and Port

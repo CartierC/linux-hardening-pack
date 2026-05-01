@@ -213,8 +213,7 @@ log "  File permissions hardened."
 # Disable unused services
 UNUSED_SERVICES=(avahi-daemon cups bluetooth)
 for svc in "${UNUSED_SERVICES[@]}"; do
-    if systemctl list-unit-files "${svc}.service" &>/dev/null \
-        && systemctl is-enabled "${svc}.service" &>/dev/null 2>&1; then
+    if systemctl is-enabled "${svc}.service" 2>/dev/null; then
         run systemctl disable --now "${svc}.service"
         log "  Disabled service: $svc"
     else
